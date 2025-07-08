@@ -1,32 +1,58 @@
 #!/bin/bash
 
 # Usage:
-#   ./check-compatibility.sh [-r] <path-to-code> <php-version> [more-versions...]
+#   ./check-compatibility.sh [-r] [--log=output.log] [--exclude=pattern] <path> <php-version> [more-versions...]
 
-# Helper: print usage
 usage() {
-  echo "Usage: $0 [-r] <path-to-code> <php-version> [more-versions...]"
+  echo "Usage: $0 [-r] [--log=output.log] [--exclude=pattern] <path> <php-version> [more-versions...]"
   echo
   echo "Options:"
-  echo "  -r    Recursively scan directories"
+  echo "  -r                   Recursively scan directories"
+  echo "  --log=<file>         Save output to a log file"
+  echo "  --exclude=<pattern>  Exclude files matching the pattern (can be used multiple times)"
   exit 1
 }
 
-# Check if minimum arguments are provided
+# Defaults
+RECURSIVE=0
+LOGFILE=""
+EXCLUDES=()
+
+# Parse arguments
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -r)
+      RECURSIVE=1
+      shift
+      ;;
+    --log=*)
+      LOGFILE="${1#*=}"
+      shift
+      ;;
+    --exclude=*)
+      EXCLUDES+=("${1#*=}")
+      shift
+      ;;
+    -*)
+      echo "Unknown option: $1"
+      usage
+      ;;
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+
+# Restore positional arguments
+set -- "${POSITIONAL[@]}"
+
+# Check required args
 if [ $# -lt 2 ]; then
   usage
 fi
 
-# Defaults
-RECURSIVE=0
-
-# Handle -r flag
-if [ "$1" == "-r" ]; then
-  RECURSIVE=1
-  shift
-fi
-
-# Get path and versions
 CODE_PATH="$1"
 shift
 VERSIONS=("$@")
@@ -37,13 +63,13 @@ if [ ! -e "$CODE_PATH" ]; then
   exit 1
 fi
 
-# Install dependencies if needed
+# Ensure dependencies
 if [ ! -f "vendor/bin/phpcs" ]; then
   echo "📦 Installing dependencies..."
   composer install
 fi
 
-# Prepare file list
+# Build file list
 if [ -f "$CODE_PATH" ]; then
   FILES="$CODE_PATH"
 elif [ -d "$CODE_PATH" ]; then
@@ -57,12 +83,32 @@ else
   exit 1
 fi
 
-# Check each version
+# Apply exclusions
+for exclude in "${EXCLUDES[@]}"; do
+  FILES=$(echo "$FILES" | grep -v "$exclude")
+done
+
+if [ -z "$FILES" ]; then
+  echo "⚠️ No PHP files found after applying exclusions."
+  exit 0
+fi
+
+# Run checks
 echo "🔍 Checking PHP compatibility for: $CODE_PATH"
-echo
+[ "$LOGFILE" != "" ] && echo "" > "$LOGFILE"
 
 for version in "${VERSIONS[@]}"; do
   echo "➡ PHP $version"
-  vendor/bin/phpcs -p --standard=PHPCompatibility --runtime-set testVersion "$version" $FILES
-  echo
+  if [ "$LOGFILE" != "" ]; then
+    {
+      echo "➡ PHP $version"
+      vendor/bin/phpcs -p --standard=PHPCompatibility --runtime-set testVersion "$version" $FILES
+      echo ""
+    } >> "$LOGFILE"
+  else
+    vendor/bin/phpcs -p --standard=PHPCompatibility --runtime-set testVersion "$version" $FILES
+    echo ""
+  fi
 done
+
+[ "$LOGFILE" != "" ] && echo "✅ Results written to $LOGFILE"

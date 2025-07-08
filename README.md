@@ -1,5 +1,7 @@
 # 🧪 PHP Compatibility Checker
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 A simple command-line tool to check your PHP code for compatibility with different PHP versions using:
 
 - ✅ [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
@@ -35,13 +37,12 @@ chmod +x check-compatibility.sh
 ## 🚀 Usage
 
 ```
-./check-compatibility.sh <path-to-code> <php-version> [more-versions...]
+./check-compatibility.sh [-r] [--log=output.log] [--exclude=pattern] <path> <php-version> [more-versions...]
 ```
 
-- `<path-to-code>`: file or directory to scan (e.g. `src`, `index.php`)
-- `<php-version>`: PHP version to check against (e.g. `7.4`, `8.0`, `8.1`)
-
-You can specify **multiple versions** to scan in one run.
+- `-r`: recursively scan directories
+- `--log=output.log`: save output to a file
+- `--exclude=pattern`: exclude files matching pattern (can be used multiple times)
 
 ---
 
@@ -53,7 +54,7 @@ You can specify **multiple versions** to scan in one run.
 ./check-compatibility.sh ./src 8.0
 ```
 
-### ✅ Check multiple PHP versions (e.g. 7.4 and 8.1):
+### ✅ Check multiple PHP versions:
 
 ```
 ./check-compatibility.sh ./app 7.4 8.0 8.1
@@ -65,39 +66,22 @@ You can specify **multiple versions** to scan in one run.
 ./check-compatibility.sh index.php 8.1
 ```
 
-### ✅ Check multiple folders in one go:
+### ✅ Recursive scan with log and exclusions:
 
 ```
-./check-compatibility.sh "./app ./routes ./resources" 8.0
+./check-compatibility.sh -r --log=compat.log --exclude="vendor" --exclude="tests" ./src 7.4 8.0
 ```
 
 ---
 
 ## 🔧 What’s Included
 
-- `PHP_CodeSniffer`: Linter framework
-- `PHPCompatibility`: Ruleset that detects version-based incompatibilities
-- `dealerdirect/phpcodesniffer-composer-installer`: Auto-registers the custom ruleset
-
-All installed locally — no system-wide changes.
-
----
-
-## 💡 Tip for CI/CD
-
-You can integrate this tool into your GitHub Actions or CI pipeline to fail builds when incompatible code is introduced. Ask in the Issues tab if you want an example workflow!
-
----
-
-## 🐛 Found a Bug?
-
-Please check or file issues with:
-
-- [`PHPCompatibility`](https://github.com/PHPCompatibility/PHPCompatibility/issues)
-- [`PHP_CodeSniffer`](https://github.com/squizlabs/PHP_CodeSniffer/issues)
+- `PHP_CodeSniffer`: Linter framework (BSD-3-Clause)
+- `PHPCompatibility`: Version ruleset (GPL-3.0-or-later)
+- Local composer install only — no global dependencies required
 
 ---
 
 ## 📄 License
 
-MIT License.
+This project is licensed under the [MIT License](LICENSE).
