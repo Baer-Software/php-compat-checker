@@ -1,0 +1,20 @@
+{
+  "name": "yourname/php-compat-checker",
+  "description": "A CLI tool to check PHP version compatibility using PHP_CodeSniffer and PHPCompatibility",
+  "type": "project",
+  "require-dev": {
+    "squizlabs/php_codesniffer": "*",
+    "phpcompatibility/php-compatibility": "*",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+  },
+  "config": {
+    "bin-dir": "vendor/bin",
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
+  "scripts": {
+    "check": "@php check-compatibility.sh"
+  },
+  "license": "MIT"
+}
