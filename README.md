@@ -16,7 +16,7 @@ No global installs needed — all dependencies are handled locally via Composer.
 1. Clone this repository:
 
 ```
-git clone https://github.com/yourname/php-compat-checker.git
+git clone https://github.com/Baer-Software/php-compat-checker.git
 cd php-compat-checker
 ```
 
